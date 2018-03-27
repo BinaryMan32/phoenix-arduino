@@ -21,7 +21,7 @@
 
 /* How many shift register chips are daisy-chained.
 */
-#define NUMBER_OF_SHIFT_CHIPS   2
+#define NUMBER_OF_SHIFT_CHIPS   1
 
 /* Width of data (how many ext lines).
 */
@@ -40,10 +40,8 @@
 */
 #define BYTES_VAL_T unsigned int
 
-int ploadPin        = 8;  // Connects to Parallel load pin the 165
-int clockEnablePin  = 9;  // Connects to Clock Enable pin the 165
-int dataPin         = 11; // Connects to the Q7 pin the 165
-int clockPin        = 12; // Connects to the Clock pin the 165
+int ploadPin     = 22; // Connects to Parallel load pin the 165
+int clockDataPin = 23; // Connects to the Q7 and Clock pins the 165
 
 BYTES_VAL_T pinValues;
 BYTES_VAL_T oldPinValues;
@@ -59,18 +57,19 @@ BYTES_VAL_T read_shift_regs()
 
     /* Trigger a parallel Load to latch the state of the data lines,
     */
-    digitalWrite(clockEnablePin, HIGH);
     digitalWrite(ploadPin, LOW);
     delayMicroseconds(PULSE_WIDTH_USEC);
     digitalWrite(ploadPin, HIGH);
-    digitalWrite(clockEnablePin, LOW);
 
     /* Loop to read each bit value from the serial out line
      * of the SN74HC165N.
     */
     for(int i = 0; i < DATA_WIDTH; i++)
     {
-        bitVal = digitalRead(dataPin);
+        pinMode(clockDataPin, INPUT);
+        digitalWrite(clockDataPin, LOW);
+        delayMicroseconds(PULSE_WIDTH_USEC);
+        bitVal = digitalRead(clockDataPin);
 
         /* Set the corresponding bit in bytesVal.
         */
@@ -78,9 +77,9 @@ BYTES_VAL_T read_shift_regs()
 
         /* Pulse the Clock (rising edge shifts the next bit).
         */
-        digitalWrite(clockPin, HIGH);
+        pinMode(clockDataPin, OUTPUT);
+        digitalWrite(clockDataPin, HIGH);
         delayMicroseconds(PULSE_WIDTH_USEC);
-        digitalWrite(clockPin, LOW);
     }
 
     return(bytesVal);
@@ -116,11 +115,9 @@ void setup()
     /* Initialize our digital pins...
     */
     pinMode(ploadPin, OUTPUT);
-    pinMode(clockEnablePin, OUTPUT);
-    pinMode(clockPin, OUTPUT);
-    pinMode(dataPin, INPUT);
+    pinMode(clockDataPin, OUTPUT);
 
-    digitalWrite(clockPin, LOW);
+    digitalWrite(clockDataPin, HIGH);
     digitalWrite(ploadPin, HIGH);
 
     /* Read in and display the pin states at startup.
