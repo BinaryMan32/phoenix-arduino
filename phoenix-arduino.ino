@@ -18,128 +18,54 @@
  *
  * https://playground.arduino.cc/Code/ShiftRegSN74HC165N
 */
-
-/* How many shift register chips are daisy-chained.
-*/
-#define NUMBER_OF_SHIFT_CHIPS   1
-
-/* Width of data (how many ext lines).
-*/
-#define DATA_WIDTH   NUMBER_OF_SHIFT_CHIPS * 8
-
-/* Width of pulse to trigger the shift register to read and latch.
-*/
-#define PULSE_WIDTH_USEC   5
+#include "hc165.h"
 
 /* Optional delay between shift register reads.
 */
 #define POLL_DELAY_MSEC   1
 
-/* You will need to change the "int" to "long" If the
- * NUMBER_OF_SHIFT_CHIPS is higher than 2.
-*/
-#define BYTES_VAL_T unsigned int
+const size_t numButtonGroups = 3;
 
-int ploadPin     = 22; // Connects to Parallel load pin the 165
-int clockDataPin = 23; // Connects to the Q7 and Clock pins the 165
+const hc165_config_t hc165_configs[numButtonGroups] = {
+  {
+    .name = "handle",
+    .ploadPin = 22,
+    .clockDataPin = 23,
+  },
+  {
+    .name = "  wing",
+    .ploadPin = 24,
+    .clockDataPin = 25,
+  },
+  {
+    .name = "thrttl",
+    .ploadPin = 26,
+    .clockDataPin = 27,
+  },
+};
 
-BYTES_VAL_T pinValues;
-BYTES_VAL_T oldPinValues;
+hc165_data_t hc165_data[numButtonGroups];
 
-/* This function is essentially a "shift-in" routine reading the
- * serial Data from the shift register chips and representing
- * the state of those pins in an unsigned integer (or long).
-*/
-BYTES_VAL_T read_shift_regs()
-{
-    long bitVal;
-    BYTES_VAL_T bytesVal = 0;
-
-    /* Trigger a parallel Load to latch the state of the data lines,
-    */
-    digitalWrite(ploadPin, LOW);
-    delayMicroseconds(PULSE_WIDTH_USEC);
-    digitalWrite(ploadPin, HIGH);
-
-    /* Loop to read each bit value from the serial out line
-     * of the SN74HC165N.
-    */
-    for(int i = 0; i < DATA_WIDTH; i++)
-    {
-        pinMode(clockDataPin, INPUT);
-        digitalWrite(clockDataPin, LOW);
-        delayMicroseconds(PULSE_WIDTH_USEC);
-        bitVal = digitalRead(clockDataPin);
-
-        /* Set the corresponding bit in bytesVal.
-        */
-        bytesVal |= (bitVal << ((DATA_WIDTH-1) - i));
-
-        /* Pulse the Clock (rising edge shifts the next bit).
-        */
-        pinMode(clockDataPin, OUTPUT);
-        digitalWrite(clockDataPin, HIGH);
-        delayMicroseconds(PULSE_WIDTH_USEC);
-    }
-
-    return(bytesVal);
-}
-
-/* Dump the list of zones along with their current status.
-*/
-void display_pin_values()
-{
-    Serial.print("Pin States:\r\n");
-
-    for(int i = 0; i < DATA_WIDTH; i++)
-    {
-        Serial.print("  Pin-");
-        Serial.print(i);
-        Serial.print(": ");
-
-        if((pinValues >> i) & 1)
-            Serial.print("HIGH");
-        else
-            Serial.print("LOW");
-
-        Serial.print("\r\n");
-    }
-
-    Serial.print("\r\n");
-}
+hc165_collection_t hc165_collection = {
+  .config = hc165_configs,
+  .data = hc165_data,
+  .size = numButtonGroups,
+};
 
 void setup()
 {
     Serial.begin(9600);
 
-    /* Initialize our digital pins...
-    */
-    pinMode(ploadPin, OUTPUT);
-    pinMode(clockDataPin, OUTPUT);
-
-    digitalWrite(clockDataPin, HIGH);
-    digitalWrite(ploadPin, HIGH);
-
-    /* Read in and display the pin states at startup.
-    */
-    pinValues = read_shift_regs();
-    display_pin_values();
-    oldPinValues = pinValues;
+    hc165_collection_setup(hc165_collection);
+    hc165_collection_read(hc165_collection);
+    hc165_collection_print(hc165_collection);
 }
 
 void loop()
 {
-    /* Read the state of all zones.
-    */
-    pinValues = read_shift_regs();
-
-    /* If there was a chage in state, display which ones changed.
-    */
-    if(pinValues != oldPinValues)
-    {
-        Serial.print("*Pin value change detected*\r\n");
-        display_pin_values();
-        oldPinValues = pinValues;
+    hc165_collection_read(hc165_collection);
+    if(hc165_collection_changed(hc165_collection)) {
+        hc165_collection_print(hc165_collection);
     }
 
     delay(POLL_DELAY_MSEC);
