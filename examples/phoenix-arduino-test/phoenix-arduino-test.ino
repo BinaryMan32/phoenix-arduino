@@ -19,6 +19,7 @@
  * https://playground.arduino.cc/Code/ShiftRegSN74HC165N
 */
 #include "hc165.h"
+#include "Potentiometer.h"
 
 /* Optional delay between shift register reads.
 */
@@ -52,6 +53,39 @@ hc165_collection_t hc165_collection = {
   .size = numButtonGroups,
 };
 
+const size_t numAxes = 4;
+
+const Potentiometer axesPotentiometers[numAxes] = {
+  {Potentiometer::Parameters{
+    .name = "X",
+    .analogInputPin = A0,
+    .referenceResistance = 100,
+    .resistanceRange = {.min = 0, .max = 87},
+    .outputRange = {.min = 0, .max = 127},
+  }},
+  {Potentiometer::Parameters{
+    .name = "Y",
+    .analogInputPin = A1,
+    .referenceResistance = 100,
+    .resistanceRange = {.min = 0, .max = 85},
+    .outputRange = {.min = 0, .max = 127},
+  }},
+  {Potentiometer::Parameters{
+    .name = "R",
+    .analogInputPin = A4,
+    .referenceResistance = 100,
+    .resistanceRange = {.min = 0, .max = 94},
+    .outputRange = {.min = 0, .max = 127},
+  }},
+  {Potentiometer::Parameters{
+    .name = "T",
+    .analogInputPin = A5,
+    .referenceResistance = 100,
+    .resistanceRange = {.min = 0, .max = 92},
+    .outputRange = {.min = 0, .max = 127},
+  }},
+};
+
 void setup()
 {
     Serial.begin(9600);
@@ -59,48 +93,6 @@ void setup()
     hc165_collection_setup(hc165_collection);
     hc165_collection_read(hc165_collection);
     hc165_collection_print(hc165_collection);
-
-    analogReference(DEFAULT);
-    pinMode(A0, INPUT);
-    pinMode(A1, INPUT);
-    pinMode(A4, INPUT);
-    pinMode(A5, INPUT);
-}
-
-/*
- * Attempting to read the voltage across only a potentiometer will always
- * return 1023. The voltage difference is 5V because there is nothing else in
- * the circuit. To measure the resistance, we use a reference resistor in
- * series with the potentiometer:
- *
- *  5V --v^v^v-- V1 --v^v^v-- GROUND
- *        Rpot         Rref
- *
- * To solve for Rpot, use Ohm's law and the fact that 2 resistors in series
- * must have the same current:
- *
- *  (Vsupply - V1) / Rpot = (V1 - 0V) / Rref
- *  (Vsupply - V1) * Rref = V1 * Rpot
- *  (Vsupply / V1 - 1) * Rref = Rpot
- *  Vsupply * Rref / V1 - Rref = Rpot
- *
- * The ADC maps 5V (assumed to be both the ADC reference voltage and the supply
- * voltage) to a value 0 - 1023 (kAdcOutputMax). Since only the ratio of
- * Vsupply and V1 is important, we can treat both as ADC outputs instead of
- * converting from ADC to voltage on both sides.
- *
- * See http://www.built-to-spec.com/blog/2009/09/10/using-a-pc-joystick-with-the-arduino/
- */
-const long kDivResistanceKOhm = 100;
-const long kAdcOutputMax = 1023;
-
-uint8_t get_potentiometer_resistance(int adc_in)
-{
-  if(adc_in > 0) {
-    return uint8_t((kAdcOutputMax * kDivResistanceKOhm) / adc_in - kDivResistanceKOhm);
-  } else {
-    return 0;
-  }
 }
 
 void loop()
@@ -119,17 +111,13 @@ void loop()
     }
 
     if(!isButtonPressed) {
-        Serial.print("Axes: x:");
-        Serial.print(get_potentiometer_resistance(analogRead(A0)));
-        Serial.print(" y:");
-        Serial.print(get_potentiometer_resistance(analogRead(A1)));
-        Serial.print(" r:");
-        Serial.print(get_potentiometer_resistance(analogRead(A4)));
-        Serial.print(" t:");
-        Serial.print(get_potentiometer_resistance(analogRead(A5)));
-        Serial.print("\r\n");
+        Serial.print("axes:");
+        for(const Potentiometer& axesPotentiometer : axesPotentiometers) {
+          Serial.print(' ');
+          Serial.print(axesPotentiometer);
+        }
+        Serial.println();
     }
 
     delay(POLL_DELAY_MSEC);
 }
-
