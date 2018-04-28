@@ -29,18 +29,18 @@ const size_t numButtonGroups = 3;
 const hc165_config_t hc165_configs[numButtonGroups] = {
   {
     .name = "handle",
-    .ploadPin = 22,
-    .clockDataPin = 23,
+    .ploadPin = 11,
+    .clockDataPin = 12,
   },
   {
     .name = "  wing",
-    .ploadPin = 24,
-    .clockDataPin = 25,
+    .ploadPin = 3,
+    .clockDataPin = 2,
   },
   {
     .name = "thrttl",
-    .ploadPin = 26,
-    .clockDataPin = 27,
+    .ploadPin = 7,
+    .clockDataPin = 6,
   },
 };
 
@@ -63,8 +63,8 @@ void setup()
     analogReference(DEFAULT);
     pinMode(A0, INPUT);
     pinMode(A1, INPUT);
-    pinMode(A8, INPUT);
-    pinMode(A9, INPUT);
+    pinMode(A4, INPUT);
+    pinMode(A5, INPUT);
 }
 
 /*
@@ -124,11 +124,12 @@ void loop()
         Serial.print(" y:");
         Serial.print(get_potentiometer_resistance(analogRead(A1)));
         Serial.print(" r:");
-        Serial.print(get_potentiometer_resistance(analogRead(A8)));
+        Serial.print(get_potentiometer_resistance(analogRead(A4)));
         Serial.print(" t:");
-        Serial.print(get_potentiometer_resistance(analogRead(A9)));
+        Serial.print(get_potentiometer_resistance(analogRead(A5)));
         Serial.print("\r\n");
     }
 
     delay(POLL_DELAY_MSEC);
 }
+

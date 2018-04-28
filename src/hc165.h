@@ -50,3 +50,4 @@ bool hc165_collection_changed(const hc165_collection_t& collection);
 void hc165_collection_print(const hc165_collection_t& collection);
 
 #endif /* HC165_H */
+
