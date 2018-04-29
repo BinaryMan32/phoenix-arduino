@@ -44,7 +44,7 @@ I used a Hantek HT6022BE Oscilloscope with the [OpenHantek Software](https://git
 
 ## Prototyping with an Arduino Nano
 
-The Arduino Nano is a small device which should fit inside the Phoenix with plenty of clearance. Despite its small size, it uses an ATmega328P and exposes 8 analog inputs and 12 digital pins. Mine is a clone which enumerates with USB VID:1A86 PID:7523, identifying it as a CH340 uart. This requires a [driver from the manufacturer's website](http://www.wch.cn/download/CH341SER_EXE.html) in order to use the serial monitor in the Arduino IDE.
+The [Arduino Nano](https://store.arduino.cc/usa/arduino-nano) is a small device which should fit inside the Phoenix with plenty of clearance. Despite its small size, it uses an ATmega328P and exposes 8 analog inputs and 12 digital pins. Mine is a clone which enumerates with USB VID:1A86 PID:7523, identifying it as a CH340 uart. This requires a [driver from the manufacturer's website](http://www.wch.cn/download/CH341SER_EXE.html) in order to use the serial monitor in the Arduino IDE.
 
 The image below shows how the nano is wired to work with the [phoenix-arduino-test.ino](examples/phoenix-arduino-test/phoenix-arduino-test.ino) test program.
 
