@@ -59,8 +59,8 @@ static const u8 sHidDescriptorData[] PROGMEM = {
 const hc165_config_t hc165_configs[kNumButtonGroups] = {
   {
     .name = "handle",
-    .ploadPin = 7,
-    .clockDataPin = 4,
+    .ploadPin = 8,
+    .clockDataPin = 7,
   },
   {
     .name = "  wing",
@@ -85,7 +85,7 @@ hc165_collection_t hc165_collection = {
 const Potentiometer axesPotentiometers[kNumAxes] = {
   { Potentiometer::Parameters{
       .name = "X",
-      .analogInputPin = A8,
+      .analogInputPin = A7,
       .referenceResistance = 100,
       .resistanceRange = {.min = 0, .max = 87},
       .outputRange = {.min = kAxesMin, .max = kAxesMax},
@@ -93,7 +93,7 @@ const Potentiometer axesPotentiometers[kNumAxes] = {
   },
   { Potentiometer::Parameters{
       .name = "Y",
-      .analogInputPin = A9,
+      .analogInputPin = A6,
       .referenceResistance = 100,
       .resistanceRange = {.min = 0, .max = 85},
       .outputRange = {.min = kAxesMin, .max = kAxesMax},

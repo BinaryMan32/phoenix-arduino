@@ -7,9 +7,7 @@ The Gravis Phoenix is a 4-axis programmable Joystick with 24 buttons. Up to 4 bu
 
 It's no longer practical to use this joystick with modern computers due to the lack of a joystick port. Even USB joystick adapters do not make it possible to use the DOS boot disk configuration utility in order to reprogram the buttons.
 
-This project will investigate removing the main logic board of the phoenix and replacing it with an Arduino which will also act as a USB input device. The [UnoJoy](https://github.com/AlanChatham/UnoJoy) project includes both Arduino code and host drivers in order to send axes positions and button states to a computer.
-
-The initial focus will be on understanding the Phoenix's circuitry in order to make the proper connections and readings with the Arduino. To do this, I disassembled the joystick in order to investigate its components.
+This project will investigate removing the main logic board of the phoenix and replacing it with an Arduino which will also act as a USB input device. The initial focus will be on understanding the Phoenix's circuitry in order to make the proper connections and readings with the Arduino. To do this, I disassembled the joystick in order to investigate its components.
 
 ## Components
 
@@ -58,11 +56,17 @@ axes: X: adc:548 res:87 out:127 clmp:127
       T: adc:702 res:46 out:63 clmp:63
 ```
 * adc: 0-1023 reading from the Analog to Digital Converter
-* res: resistance computed using Ohm's law from the ADC reading and the reference resistance. In the image above, note the reference resistors to the left of the Arduino near the analog input pins.
-* out: resistance mapped linearly to a specified output range, currently set to 0-127 for each potentiometer
-* clmp: the output value clamped to the output range, to ensure it is within spec
+* res: resistance computed using Ohm's law from the ADC reading and the
+  reference resistance. In the image above, note the reference resistors to the
+  left of the Arduino near the analog input pins.
+* out: resistance mapped linearly to a specified output range, currently set to
+  0-127 for each potentiometer
+* clmp: the output value clamped to the output range, to ensure it is within
+  spec
 
-Each time one of the buttons' state changes, the test program dumps the button state. Below is sample output when the trigger and one of the wing buttons are pressed.
+Each time one of the buttons' state changes, the test program dumps the button
+state. Below is sample output when the trigger and one of the wing buttons are
+pressed.
 ```
  group 01234567
 handle .....0..
@@ -70,4 +74,65 @@ handle .....0..
 thrttl ........
 ```
 
-## Testing UnoJoy
+## Arduino Micro with Native HID Support
+
+The [Arduino Micro](https://store.arduino.cc/usa/arduino-micro) is based on the
+ATmega32U4 which has integrated USB support. Many other Arduinos rely on an
+external chip for USB communication, which requires flashing software onto both
+chips and communicating between them in order to implement a USB device such as
+a joystick. However, the Arduino Micro is able to use the built-in
+[HID](https://www.arduino.cc/en/Reference/HID) library in order to add a
+descriptor for your USB HID device and report events. The
+[Mouse](https://github.com/arduino-libraries/Mouse/blob/master/src/Mouse.cpp)
+library is a convenient example for this functionality.
+
+The most difficult part of creating a USB HID device is creating the descriptor.
+This is a blob of binary data sent from the device to the computer describing
+the device's capabilities and the format of the data that it reports. I found
+many examples of descriptors which were raw hex bytes with haphazard comments
+that were hard to follow. I wanted a better way to directly generate the HID
+descriptor using C++ enums, so I created
+[HidDescriptorHelper.h](src/HidDescriptorHelper.h) based on the
+[HID 1.11](http://www.usb.org/developers/hidpage/HID1_11.pdf) and
+[HID Usage Tables 1.12](http://www.usb.org/developers/hidpage/Hut1_12v2.pdf)
+specifications.
+
+Here is the beginning of a descriptor constructed using HidDescriptorHelper.h:
+```C++
+#include "HidDescriptorHelper.h"
+using namespace usb::hid;
+static const u8 sHidDescriptorData[] PROGMEM = {
+  Global::UsagePage | 1, usage::Page::GenericDesktop,
+  Local::Usage | 1, usage::generic_desktop::Application::Joystick,
+
+  Main::Collection | 1, Collection::Application,
+    ...
+  Main::EndCollection | 0,
+};
+```
+
+I strongly prefer this to the alternative which requires continuously
+referencing the specifications and allows for the possibility of the data
+not matching the comments.
+```C++
+static const u8 sHidDescriptorData[] PROGMEM = {
+  0x05, 0x01, // USAGE_PAGE (Generic Desktop)
+  0x09, 0x04, // USAGE (Joystick)
+  0xa1, 0x01, // COLLECTION (Application)
+  0xc0,       // END COLLECTION
+};
+```
+
+Using [HidDescriptorHelper.h](src/HidDescriptorHelper.h), I created the example
+[phoenix-arduino-joystick.ino](examples/phoenix-arduino-test/phoenix-arduino-joystick.ino)
+which adds a HID descriptor for the phoenix and reports events. Since I replaced
+the Nano with the Micro, I also reworked my wiring layout and made corresponding
+updates to the pin mappings.
+
+![Arduino Micro Bread Board Prototype](images/arduino_micro_bread_board.png)
+
+After all of these changes, I was finally able to run the new example. I saw the
+joystick register with 4 axes and 24 buttons, and verified that all were
+functioning correctly.
+
+![Windows Game Controller Test](images/game_controller_test.png)

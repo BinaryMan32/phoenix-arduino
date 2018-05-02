@@ -10,8 +10,8 @@ const size_t numButtonGroups = 3;
 const hc165_config_t hc165_configs[numButtonGroups] = {
   {
     .name = "handle",
-    .ploadPin = 7,
-    .clockDataPin = 4,
+    .ploadPin = 8,
+    .clockDataPin = 7,
   },
   {
     .name = "  wing",
@@ -38,14 +38,14 @@ const size_t numAxes = 4;
 const Potentiometer axesPotentiometers[numAxes] = {
   {Potentiometer::Parameters{
     .name = "X",
-    .analogInputPin = A8,
+    .analogInputPin = A7,
     .referenceResistance = 100,
     .resistanceRange = {.min = 0, .max = 87},
     .outputRange = {.min = 0, .max = 127},
   }},
   {Potentiometer::Parameters{
     .name = "Y",
-    .analogInputPin = A9,
+    .analogInputPin = A6,
     .referenceResistance = 100,
     .resistanceRange = {.min = 0, .max = 85},
     .outputRange = {.min = 0, .max = 127},
