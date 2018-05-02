@@ -32,7 +32,7 @@ static const u8 sHidDescriptorData[] PROGMEM = {
       Global::UsagePage | 1, usage::Page::GenericDesktop,
       Local::Usage | 1, usage::generic_desktop::Axis::X,
       Local::Usage | 1, usage::generic_desktop::Axis::Y,
-      Local::Usage | 1, usage::generic_desktop::Axis::Rx,
+      Local::Usage | 1, usage::generic_desktop::Axis::Rz,
       Local::Usage | 1, usage::generic_desktop::Axis::Z,
       Global::LogicalMinimum | 2, 0x00, 0x80, // kAxesMin = -32768
       Global::LogicalMaximum | 2, 0xFF, 0x7F, // kAxesMax = 32767
@@ -59,18 +59,18 @@ static const u8 sHidDescriptorData[] PROGMEM = {
 const hc165_config_t hc165_configs[kNumButtonGroups] = {
   {
     .name = "handle",
-    .ploadPin = 11,
-    .clockDataPin = 12,
+    .ploadPin = 7,
+    .clockDataPin = 4,
   },
   {
     .name = "  wing",
-    .ploadPin = 3,
-    .clockDataPin = 2,
+    .ploadPin = 16,
+    .clockDataPin = 14,
   },
   {
     .name = "thrttl",
-    .ploadPin = 7,
-    .clockDataPin = 6,
+    .ploadPin = 15,
+    .clockDataPin = 18,
   },
 };
 
@@ -85,7 +85,7 @@ hc165_collection_t hc165_collection = {
 const Potentiometer axesPotentiometers[kNumAxes] = {
   { Potentiometer::Parameters{
       .name = "X",
-      .analogInputPin = A0,
+      .analogInputPin = A8,
       .referenceResistance = 100,
       .resistanceRange = {.min = 0, .max = 87},
       .outputRange = {.min = kAxesMin, .max = kAxesMax},
@@ -93,7 +93,7 @@ const Potentiometer axesPotentiometers[kNumAxes] = {
   },
   { Potentiometer::Parameters{
       .name = "Y",
-      .analogInputPin = A1,
+      .analogInputPin = A9,
       .referenceResistance = 100,
       .resistanceRange = {.min = 0, .max = 85},
       .outputRange = {.min = kAxesMin, .max = kAxesMax},
@@ -101,7 +101,7 @@ const Potentiometer axesPotentiometers[kNumAxes] = {
   },
   { Potentiometer::Parameters{
       .name = "R",
-      .analogInputPin = A4,
+      .analogInputPin = A1,
       .referenceResistance = 100,
       .resistanceRange = {.min = 0, .max = 94},
       .outputRange = {.min = kAxesMin, .max = kAxesMax},
@@ -109,7 +109,7 @@ const Potentiometer axesPotentiometers[kNumAxes] = {
   },
   { Potentiometer::Parameters{
       .name = "T",
-      .analogInputPin = A5,
+      .analogInputPin = A10,
       .referenceResistance = 100,
       .resistanceRange = {.min = 0, .max = 92},
       .outputRange = {.min = kAxesMin, .max = kAxesMax},

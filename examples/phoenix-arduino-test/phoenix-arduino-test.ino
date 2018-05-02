@@ -10,18 +10,18 @@ const size_t numButtonGroups = 3;
 const hc165_config_t hc165_configs[numButtonGroups] = {
   {
     .name = "handle",
-    .ploadPin = 11,
-    .clockDataPin = 12,
+    .ploadPin = 7,
+    .clockDataPin = 4,
   },
   {
     .name = "  wing",
-    .ploadPin = 3,
-    .clockDataPin = 2,
+    .ploadPin = 16,
+    .clockDataPin = 14,
   },
   {
     .name = "thrttl",
-    .ploadPin = 7,
-    .clockDataPin = 6,
+    .ploadPin = 15,
+    .clockDataPin = 18,
   },
 };
 
@@ -38,28 +38,28 @@ const size_t numAxes = 4;
 const Potentiometer axesPotentiometers[numAxes] = {
   {Potentiometer::Parameters{
     .name = "X",
-    .analogInputPin = A0,
+    .analogInputPin = A8,
     .referenceResistance = 100,
     .resistanceRange = {.min = 0, .max = 87},
     .outputRange = {.min = 0, .max = 127},
   }},
   {Potentiometer::Parameters{
     .name = "Y",
-    .analogInputPin = A1,
+    .analogInputPin = A9,
     .referenceResistance = 100,
     .resistanceRange = {.min = 0, .max = 85},
     .outputRange = {.min = 0, .max = 127},
   }},
   {Potentiometer::Parameters{
     .name = "R",
-    .analogInputPin = A4,
+    .analogInputPin = A1,
     .referenceResistance = 100,
     .resistanceRange = {.min = 0, .max = 94},
     .outputRange = {.min = 0, .max = 127},
   }},
   {Potentiometer::Parameters{
     .name = "T",
-    .analogInputPin = A5,
+    .analogInputPin = A10,
     .referenceResistance = 100,
     .resistanceRange = {.min = 0, .max = 92},
     .outputRange = {.min = 0, .max = 127},
