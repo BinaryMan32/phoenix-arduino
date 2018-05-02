@@ -124,7 +124,7 @@ static const u8 sHidDescriptorData[] PROGMEM = {
 ```
 
 Using [HidDescriptorHelper.h](src/HidDescriptorHelper.h), I created the example
-[phoenix-arduino-joystick.ino](examples/phoenix-arduino-test/phoenix-arduino-joystick.ino)
+[phoenix-arduino-joystick.ino](examples/phoenix-arduino-joystick/phoenix-arduino-joystick.ino)
 which adds a HID descriptor for the phoenix and reports events. Since I replaced
 the Nano with the Micro, I also reworked my wiring layout and made corresponding
 updates to the pin mappings.
