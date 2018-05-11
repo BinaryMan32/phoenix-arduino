@@ -64,13 +64,13 @@ const hc165_config_t hc165_configs[kNumButtonGroups] = {
   },
   {
     .name = "  wing",
-    .ploadPin = 16,
-    .clockDataPin = 14,
+    .ploadPin = 15,
+    .clockDataPin = 18,
   },
   {
     .name = "thrttl",
-    .ploadPin = 15,
-    .clockDataPin = 18,
+    .ploadPin = 20,
+    .clockDataPin = 21,
   },
 };
 
