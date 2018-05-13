@@ -63,14 +63,14 @@ const hc165_config_t hc165_configs[kNumButtonGroups] = {
     .clockDataPin = 7,
   },
   {
-    .name = "  wing",
-    .ploadPin = 15,
-    .clockDataPin = 18,
-  },
-  {
     .name = "thrttl",
     .ploadPin = 20,
     .clockDataPin = 21,
+  },
+  {
+    .name = "  wing",
+    .ploadPin = 15,
+    .clockDataPin = 18,
   },
 };
 
@@ -126,6 +126,60 @@ void setup()
   HID().AppendDescriptor(&sHidDescriptior);
 }
 
+const int kNumButtons = 24;
+/*
+ * Map the hardware button ordering to a more sensible one by reordering The
+ * bits. Each value is the source bit which should be copied to that location.
+ */
+u8 buttonMapping[kNumButtons] = {
+  5,
+  6,
+  2,
+  1,
+  0,
+  4,
+  7,
+  3,
+
+  11,
+  12,
+  10,
+  8,
+  13,
+  9,
+  15,
+  14,
+
+  19,
+  18,
+  17,
+  16,
+  23,
+  20,
+  21,
+  22,
+};
+
+/* Access button bits either as separate bytes or continuous bits. */
+union buttons_union_t {
+  u32 bits : kNumButtons;
+  u8 bytes[kNumButtonGroups];
+};
+
+u32 getMappedButtons(hc165_data_t* hc165_data) {
+  buttons_union_t buttonsRaw;
+  for (int i = 0; i < kNumButtonGroups; i++) {
+    buttonsRaw.bytes[i] = ~hc165_data[i].values;
+  }
+
+  u32 buttonsMapped = 0;
+  for (int i = 0; i < kNumButtons; i++) {
+    bitWrite(buttonsMapped, i, bitRead(buttonsRaw.bits, buttonMapping[i]));
+  }
+
+  return buttonsMapped;
+}
+
 void loop()
 {
   ReportData reportData;
@@ -142,8 +196,9 @@ void loop()
 
   // Read buttons
   hc165_collection_read(hc165_collection);
+  u32 buttonsMapped = getMappedButtons(hc165_data);
   for (int i = 0; i < kNumButtonGroups; i++) {
-    reportData.buttons[i] = hc165_data[i].values;
+    reportData.buttons[i] = buttonsMapped >> (i * 8);
   }
 
   // Report data to host
