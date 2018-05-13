@@ -138,6 +138,13 @@ const Potentiometer axesPotentiometers[kNumAxes] = {
 
 void setup()
 {
+  // Turn on LED as a sign of life
+  int ledPins[] = {9, 5, 3};
+  u8 ledColor[] = {31, 39, 0};
+  for (int i = 0; i < sizeof(color); i++) {
+    analogWrite(ledPins[i], ledColor[i]);
+  }
+
   hc165_collection_setup(hc165_collection);
 
   // Add USB HID device description of the Phoenix
