@@ -27,7 +27,7 @@ enum class Global : u8
   UsagePage       = 0x0, // See usage::Page for values
   LogicalMinimum  = 0x1,
   LogicalMaximum  = 0x2,
-  PhysicalMinumum = 0x3,
+  PhysicalMinimum = 0x3,
   PhysicalMaximum = 0x4,
   UnitExponent    = 0x5,
   Unit            = 0x6,
@@ -115,9 +115,14 @@ constexpr u8 operator | (Local tag, int size)
 // Bits used in constructing values of Main::Input, Main::Output, and Main::Feature
 enum DataBits
 {
-  Constant = 0x01, // Data if not set
-  Variable = 0x02, // Array if not set
-  Relative = 0x04, // Absolute if not set
+  Constant    = 0x01, // Data if not set
+  Variable    = 0x02, // Array if not set
+  Relative    = 0x04, // Absolute if not set
+  Wrap        = 0x08, // NoWrap if not set
+  NonLinear   = 0x10, // Linear if not set
+  NoPreferred = 0x20, // Has Preferred state if not set
+  NullState   = 0x40, // NoNullPosition if not set
+  Volatile    = 0x80, // NonVolatile if not set
 };
 
 // Values of Main::Collection

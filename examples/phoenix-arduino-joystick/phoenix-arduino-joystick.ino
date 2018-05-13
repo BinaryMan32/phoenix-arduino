@@ -51,6 +51,25 @@ static const u8 sHidDescriptorData[] PROGMEM = {
     Global::ReportCount | 1, 24,
     Main::Input | 1, DataBits::Variable,
 
+#if 0
+    /*
+     * 8 way hat switch
+     * Reports an angle in 45 degree increments by mapping the values 0-7
+     * to the angles 0-315 degrees. Report -8 (the most negative value) if
+     * the hat is in the null position.
+     */
+    Global::UsagePage | 1, usage::Page::GenericDesktop,
+    Local::Usage | 1, usage::generic_desktop::Miscellaneous::HatSwitch,
+    Global::LogicalMinimum | 1, 0,
+    Global::LogicalMaximum | 1, 7,
+    Global::PhysicalMinimum | 1, 0,
+    Global::PhysicalMaximum | 2, 0x3b, 0x01, // 0x13b = 315
+    Global::Unit | 1, 0x14, // Degrees | EnglishRotation
+    Global::ReportSize | 1, 4,
+    Global::ReportCount | 1, 1,
+    Main::Input | 1, DataBits::Variable | DataBits::NullState,
+#endif
+
   Main::EndCollection | 0,
 };
 
