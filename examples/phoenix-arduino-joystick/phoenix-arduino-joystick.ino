@@ -6,8 +6,9 @@
 
 const size_t kNumAxes = 4;
 using AxesValueType = int16_t;
-const AxesValueType kAxesMin = -32768;
-const AxesValueType kAxesMax = 32767;
+#define AXIS_BITS 10
+const AxesValueType kAxesMin = (-1 << (AXIS_BITS - 1));
+const AxesValueType kAxesMax = -kAxesMin - 1;
 
 const size_t kNumButtonGroups = 3;
 
@@ -18,6 +19,10 @@ struct ReportData {
 };
 
 using namespace usb::hid;
+
+constexpr uint8_t GetByte(int16_t x, uint8_t b) {
+  return (x >> (b << 3));
+}
 
 const u8 kReportId = 1;
 static const u8 sHidDescriptorData[] PROGMEM = {
@@ -34,9 +39,14 @@ static const u8 sHidDescriptorData[] PROGMEM = {
       Local::Usage | 1, usage::generic_desktop::Axis::Y,
       Local::Usage | 1, usage::generic_desktop::Axis::Rz,
       Local::Usage | 1, usage::generic_desktop::Axis::Z,
-      Global::LogicalMinimum | 2, 0x00, 0x80, // kAxesMin = -32768
-      Global::LogicalMaximum | 2, 0xFF, 0x7F, // kAxesMax = 32767
-      Global::ReportSize | 1, 16,
+#if AXIS_BITS > 8
+      Global::LogicalMinimum | 2, GetByte(kAxesMin, 0), GetByte(kAxesMin, 1),
+      Global::LogicalMaximum | 2, GetByte(kAxesMax, 0), GetByte(kAxesMax, 1),
+#else // AXIS_BITS <= 8
+      Global::LogicalMinimum | 1, kAxesMin,
+      Global::LogicalMaximum | 1, kAxesMax,
+#endif
+      Global::ReportSize | 1, sizeof(AxesValueType) * 8,
       Global::ReportCount | 1, 4,
       Main::Input | 1, DataBits::Variable,
     Main::EndCollection | 0,
