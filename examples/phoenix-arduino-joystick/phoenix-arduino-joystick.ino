@@ -140,8 +140,8 @@ void setup()
 {
   // Turn on LED as a sign of life
   int ledPins[] = {9, 5, 3};
-  u8 ledColor[] = {31, 39, 0};
-  for (int i = 0; i < sizeof(color); i++) {
+  u8 ledColor[] = {15, 0, 0};
+  for (int i = 0; i < sizeof(ledColor); i++) {
     analogWrite(ledPins[i], ledColor[i]);
   }
 
