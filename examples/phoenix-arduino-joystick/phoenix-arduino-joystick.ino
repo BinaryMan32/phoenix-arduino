@@ -160,6 +160,10 @@ void setup()
   // Add USB HID device description of the Phoenix
   static HIDSubDescriptor sHidDescriptior(sHidDescriptorData, sizeof(sHidDescriptorData));
   HID().AppendDescriptor(&sHidDescriptior);
+
+#ifdef TIME_HISTOGRAM
+  Serial.begin(9600);
+#endif /* TIME_HISTOGRAM */
 }
 
 const int kNumButtons = 24;
@@ -216,6 +220,34 @@ u32 getMappedButtons(hc165_data_t* hc165_data) {
   return buttonsMapped;
 }
 
+#ifdef TIME_HISTOGRAM
+const size_t num_bins = 100;
+uint32_t histogram[num_bins] = {};
+unsigned long micros_prev = 0;
+unsigned long bin_min = 5 * 1000;
+unsigned long bin_size = 100;
+unsigned long bin_max = bin_min + bin_size * num_bins - 1;
+
+void time_histogram_update(unsigned long micros_delta) {
+  size_t bin = (constrain(micros_delta, bin_min, bin_max) - bin_min) / bin_size;
+  histogram[bin]++;
+}
+
+void time_histogram_dump() {
+  for(size_t i = 0; i < num_bins; i++) {
+    unsigned long bin = (bin_min + i * bin_size) / 100;
+    Serial.print(bin / 10);
+    Serial.print('.');
+    Serial.print(bin % 10);
+    Serial.print(' ');
+    Serial.print(histogram[i]);
+    Serial.println();
+  }
+}
+#endif /* TIME_HISTOGRAM */
+
+u32 buttonsPrev = 0;
+
 void loop()
 {
   ReportData reportData;
@@ -239,4 +271,17 @@ void loop()
 
   // Report data to host
   HID().SendReport(kReportId, &reportData, sizeof(reportData));
+
+#ifdef TIME_HISTOGRAM
+  unsigned long micros_curr = micros();
+  time_histogram_update(micros_curr - micros_prev);
+  micros_prev = micros_curr;
+
+  if(((buttonsPrev ^ buttonsMapped) & 1) && (buttonsMapped ^ 1)) {
+    time_histogram_dump();
+    memset(histogram, 0, sizeof(histogram));
+  }
+#endif /* TIME_HISTOGRAM */
+
+  buttonsPrev = buttonsMapped;
 }
