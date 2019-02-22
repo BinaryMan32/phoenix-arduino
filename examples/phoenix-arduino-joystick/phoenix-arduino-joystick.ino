@@ -12,6 +12,8 @@ const AxesValueType kAxesMax = -kAxesMin - 1;
 
 const size_t kNumButtonGroups = 3;
 
+#define VIRTUAL_HAT
+
 // Report data sent by the HID input device
 struct ReportData {
   AxesValueType axes[kNumAxes];
@@ -23,6 +25,12 @@ using namespace usb::hid;
 constexpr uint8_t GetByte(int16_t x, uint8_t b) {
   return (x >> (b << 3));
 }
+
+#ifdef VIRTUAL_HAT
+const u8 kButtonCount = 20;
+#else
+const u8 kButtonCount = 24;
+#endif /* VIRTUAL_HAT */
 
 const u8 kReportId = 1;
 static const u8 sHidDescriptorData[] PROGMEM = {
@@ -54,14 +62,14 @@ static const u8 sHidDescriptorData[] PROGMEM = {
     // 24 1 bit buttons
     Global::UsagePage | 1, usage::Page::Button,
     Local::UsageMinimum | 1, 1,
-    Local::UsageMaximum | 1, 24,
+    Local::UsageMaximum | 1, kButtonCount,
     Global::LogicalMinimum | 1, 0,
     Global::LogicalMaximum | 1, 1,
     Global::ReportSize | 1, 1,
-    Global::ReportCount | 1, 24,
+    Global::ReportCount | 1, kButtonCount,
     Main::Input | 1, DataBits::Variable,
 
-#if 0
+#ifdef VIRTUAL_HAT
     /*
      * 8 way hat switch
      * Reports an angle in 45 degree increments by mapping the values 0-7
@@ -82,6 +90,28 @@ static const u8 sHidDescriptorData[] PROGMEM = {
 
   Main::EndCollection | 0,
 };
+
+#ifdef VIRTUAL_HAT
+const int8_t hat_null = -8;
+int8_t button_hat_lut[16] = {
+  hat_null, // 0000
+  0,        // 0001
+  2,        // 0010
+  1,        // 0011
+  4,        // 0100
+  hat_null, // 0101
+  3,        // 0110
+  hat_null, // 0111
+  6,        // 1000
+  7,        // 1001
+  hat_null, // 1010
+  hat_null, // 1011
+  5,        // 1100
+  hat_null, // 1101
+  hat_null, // 1110
+  hat_null, // 1111
+};
+#endif /* VIRTUAL_HAT */
 
 #define POLL_DELAY_MSEC   1
 
@@ -185,10 +215,12 @@ u8 buttonMapping[kNumButtons] = {
   12,
   10,
   8,
+#ifndef VIRTUAL_HAT
   13,
-  9,
   15,
   14,
+  9,
+#endif /* ! VIRTUAL_HAT */
 
   19,
   18,
@@ -198,6 +230,13 @@ u8 buttonMapping[kNumButtons] = {
   20,
   21,
   22,
+
+#ifdef VIRTUAL_HAT
+  13,
+  15,
+  14,
+  9,
+#endif /* VIRTUAL_HAT */
 };
 
 /* Access button bits either as separate bytes or continuous bits. */
@@ -268,6 +307,13 @@ void loop()
   for (int i = 0; i < kNumButtonGroups; i++) {
     reportData.buttons[i] = buttonsMapped >> (i * 8);
   }
+
+  #ifdef VIRTUAL_HAT
+  u8& hat_button_group = reportData.buttons[kNumButtonGroups - 1];
+  uint8_t hat_buttons = hat_button_group >> 4;
+  uint8_t hat_angle = button_hat_lut[hat_buttons];
+  hat_button_group = (hat_button_group & 0xf) | (hat_angle << 4);
+  #endif /* VIRTUAL_HAT */
 
   // Report data to host
   HID().SendReport(kReportId, &reportData, sizeof(reportData));
